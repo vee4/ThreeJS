@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/three.min.js"></script>
+</head>
+<body>
+
+</body>
+<script>
+    //创建场景对线
+    var scene  = new THREE.Scene();
+    //创建相机对象
+    var camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    //创建渲染器对象
+    var renderer = new THREE.WebGLRenderer();
+    //设置渲染器渲染范围
+    renderer.setSize(window.innerWidth/2, window.innerHeight/2);
+    document.body.appendChild(renderer.domElement);
+
+    //创建几何对象
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    //创建原料对象
+    var material = new THREE.MeshBasicMaterial({
+        color : 0x00ff00
+    });
+    //创建网格对象
+    var cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    //修改camera的显示优先级
+    camera.position.z = 5;
+
+    //镜头精确观测位置
+    //camera.lookAt(1, 1, 1);
+    //渲染
+    animate();
+
+    function animate(){
+
+        requestAnimationFrame(animate);
+
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+
+        renderer.render(scene, camera);
+
+    }
+</script>
+</html>

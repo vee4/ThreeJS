@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/three.min.js"></script>
+</head>
+<body>
+
+</body>
+<script>
+    //import * as THREE from "./js/three.min";
+
+    var scene, camera, renderer;
+    var hlength = 200, mlength = 300, slength = 400;
+
+    init();
+    animate();
+
+    function init(){
+        //创建场景对线
+        scene  = new THREE.Scene();
+        //创建相机对象
+        camera = new THREE.PerspectiveCamera(100, window.innerWidth/window.innerHeight, 0.1, 2000);
+        //设置相机位置
+        camera.position.set(0, 0, 1000);
+        //设置相机焦点位置
+        camera.lookAt(0, 0, 0);//相机位置和焦点位置的设置将导致 该方向上的场景的水平投影
+        ///创建渲染器对象
+        renderer = new THREE.WebGLRenderer();
+        //设置渲染器渲染范围
+        renderer.setSize(window.innerWidth/2, window.innerHeight/2);
+        document.body.appendChild(renderer.domElement);
+
+        setupClock();
+    }
+
+    /**
+     * 加载 时钟  时分秒 线条
+     */
+    function setupClock(){
+
+        //创建原料对象
+        var material = new THREE.LineBasicMaterial({
+            color : 0x00ff00
+        });
+        var clockGeos = getClockGeos();
+        clockGeos.forEach(function (geo) {
+            scene.add(new THREE.Line(geo, material));
+        })
+        renderer.render(scene, camera);
+    }
+
+    function getClockGeos(){
+
+        var pos = getClockPosition();
+        var hpos = pos[0];
+        var mpos = pos[1];
+        var spos = pos[2];
+
+        //创建几何对象
+        var hgeo = new THREE.Geometry();
+        hgeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        hgeo.vertices.push(new THREE.Vector3(hpos.x, hpos.y, 0));
+
+        var mgeo = new THREE.Geometry();
+        mgeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        mgeo.vertices.push(new THREE.Vector3(mpos.x, mpos.y, 0));
+
+        var sgeo = new THREE.Geometry();
+        sgeo.vertices.push(new THREE.Vector3(0, 0, 0));
+        sgeo.vertices.push(new THREE.Vector3(spos.x, spos.y, 0));
+
+        return [hgeo, mgeo, sgeo];
+    }
+
+    function getClockPosition(){
+
+        var date = new Date();
+        var h = date.getHours(),  m = date.getMinutes(), s = date.getSeconds() + date.getMilliseconds()/1000;
+
+        var hdegree =  ((h%12+m/60)/12)*360,  mdegree = (m+s/60)/60*360, sdegree = s/60*360;
+        //console.log("Degree of Time: "+ hdegree +","+ mdegree +","+sdegree);
+
+        var hpos = calcPosition(hdegree, hlength);
+        //console.log("Position H :(" + hpos.x +","+hpos.y+")");
+        var mpos = calcPosition(mdegree, mlength);
+        //console.log("Position M :(" + mpos.x +","+mpos.y+")");
+        var spos = calcPosition(sdegree, slength);
+        //console.log("Position S :(" + spos.x +","+spos.y+")");
+
+        return [hpos, mpos, spos];
+    }
+
+    function animate(){
+        requestAnimationFrame(animate);
+        render();
+    }
+
+    function render(){
+        //TODO  修改scene里边的线条信息，更新时分秒线条位置信息
+        var pos = getClockPosition();
+        var children = scene.children;
+        //console.log(scene.children);
+        for(var i=0; i<children.length; i++){
+            children[i].geometry.vertices[1] = new THREE.Vector3(pos[i].x, pos[i].y, 0);
+            children[i].geometry.verticesNeedUpdate = true;
+        }
+        renderer.render(scene, camera);
+    }
+
+
+    /**
+     * 根据角度和斜边计算现对于原点的位置
+     * @param degree
+     * @param length
+     * @returns {{x: number, y: number}}
+     */
+    function calcPosition(degree, length){
+        var y = Math.sqrt(length*length/(1+Math.pow(Math.tan((degree%180)/180*Math.PI), 2)));
+        var quadrant = Math.floor(degree/90);
+        if(quadrant==1 || quadrant==2){
+            y = -y;
+        }
+
+        var x = y*Math.tan((degree%180)/180*Math.PI);
+
+        x = Math.floor(x);
+        y = Math.floor(y);
+
+        return {x, y};
+    }
+</script>
+</html>
